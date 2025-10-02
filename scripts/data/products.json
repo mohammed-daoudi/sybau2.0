@@ -1,0 +1,89 @@
+[
+  {
+    "title": "Cyberpunk LED Jacket",
+    "description": "Step into the future with our signature Cyberpunk LED Jacket. This stunning piece of wearable technology seamlessly blends fashion with innovation, featuring customizable LED patterns that respond to your movement and music.\n\nKey Features:\n- Advanced LED integration with 16 million color combinations\n- Wireless smartphone control via our custom app\n- Water-resistant design (IPX4 rated)\n- Machine washable (LED components removable)\n- Built-in motion sensors for reactive lighting\n- 12-hour battery life with USB-C fast charging\n\nPerfect for:\n- Music festivals and concerts\n- Night photography and content creation\n- Tech enthusiasts and early adopters\n- Urban fashion pioneers\n\nMaterials:\n- Outer shell: Weather-resistant polyester blend\n- Inner lining: Breathable mesh fabric\n- LED strips: Military-grade flexible circuits\n- Hardware: Brushed aluminum accents",
+    "price": 299.99,
+    "stock": 50,
+    "tags": ["cyberpunk", "LED", "jacket", "wearable-tech", "smart-clothing", "festival-wear"],
+    "currency": "USD",
+    "variants": [
+      {
+        "name": "Size",
+        "options": ["S", "M", "L", "XL"],
+        "stockByOption": {"S": 10, "M": 15, "L": 15, "XL": 10}
+      },
+      {
+        "name": "Color",
+        "options": ["Midnight Black", "Arctic Silver", "Neon Blue"],
+        "stockByOption": {"Midnight Black": 20, "Arctic Silver": 15, "Neon Blue": 15}
+      }
+    ],
+    "imageFiles": [
+      {
+        "url": "/products/images/cyberpunk-jacket-front.jpg",
+        "alt": "Front view of the Cyberpunk LED Jacket showing the main LED pattern"
+      },
+      {
+        "url": "/products/images/cyberpunk-jacket-back.jpg",
+        "alt": "Back view showcasing the intricate LED design"
+      },
+      {
+        "url": "/products/images/cyberpunk-jacket-detail.jpg",
+        "alt": "Close-up of the LED control panel and fabric texture"
+      }
+    ],
+    "models": [
+      {
+        "url": "/products/models/cyberpunk-jacket.glb",
+        "format": "glb",
+        "thumbnail": "/products/images/cyberpunk-jacket-3d-preview.jpg"
+      }
+    ],
+    "seo": {
+      "metaTitle": "Cyberpunk LED Jacket | Smart Wearable Tech | Ouswear",
+      "metaDescription": "Experience the future of fashion with our Cyberpunk LED Jacket. Customizable lighting, smartphone control, and premium construction. Shop now at Ouswear.",
+      "keywords": "LED jacket, smart clothing, cyberpunk fashion, wearable technology, festival wear"
+    }
+  },
+  {
+    "title": "Quantum Weave Backpack",
+    "description": "The Quantum Weave Backpack is where cutting-edge technology meets everyday functionality. This smart backpack redefines urban mobility with its innovative features and futuristic design.\n\nKey Features:\n- Built-in 20,000mAh power bank with wireless charging\n- RFID-protected compartments\n- Smart organization system with expandable capacity (20L to 30L)\n- Water-resistant quantum-inspired fabric pattern\n- Integrated LED lighting for visibility and style\n- Hidden anti-theft compartments\n\nTech Specs:\n- USB-C and wireless charging capabilities\n- Bluetooth location tracking\n- Weatherproof rating: IPX5\n- Smart weight distribution system\n- Reinforced laptop compartment (fits up to 17\")\n\nPerfect for:\n- Tech-savvy professionals\n- Digital nomads\n- Urban commuters\n- Photography enthusiasts\n\nMaterials:\n- Exterior: High-density ballistic nylon\n- Interior: Ripstop liner\n- Hardware: Aircraft-grade aluminum\n- Zippers: YKK water-resistant",
+    "price": 149.99,
+    "stock": 75,
+    "tags": ["backpack", "smart-tech", "accessories", "travel", "everyday-carry"],
+    "currency": "USD",
+    "variants": [
+      {
+        "name": "Color",
+        "options": ["Matrix Black", "Cyber Silver", "Quantum Blue"],
+        "stockByOption": {"Matrix Black": 30, "Cyber Silver": 25, "Quantum Blue": 20}
+      }
+    ],
+    "imageFiles": [
+      {
+        "url": "/products/images/quantum-backpack-main.jpg",
+        "alt": "Quantum Weave Backpack main view showing its sleek design"
+      },
+      {
+        "url": "/products/images/quantum-backpack-open.jpg",
+        "alt": "Interior view showing smart organization system"
+      },
+      {
+        "url": "/products/images/quantum-backpack-tech.jpg",
+        "alt": "Close-up of charging ports and tech features"
+      }
+    ],
+    "models": [
+      {
+        "url": "/products/models/quantum-backpack.glb",
+        "format": "glb",
+        "thumbnail": "/products/images/quantum-backpack-3d-preview.jpg"
+      }
+    ],
+    "seo": {
+      "metaTitle": "Quantum Weave Smart Backpack | Tech-Enabled Carry | Ouswear",
+      "metaDescription": "Elevate your daily carry with our Quantum Weave Backpack. Features wireless charging, anti-theft protection, and expandable storage. Available at Ouswear.",
+      "keywords": "smart backpack, tech backpack, urban carry, anti-theft bag, wireless charging backpack"
+    }
+  }
+]
