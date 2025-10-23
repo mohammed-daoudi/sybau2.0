@@ -22,18 +22,24 @@ export default function SignInPage() {
     setLoading(true);
 
     try {
+      console.log('Attempting sign in with:', { email: formData.email });
       const result = await signIn('credentials', {
         email: formData.email,
         password: formData.password,
         redirect: false,
+        callbackUrl: '/admin', // Redirect to admin page after successful login
       });
 
+      console.log('Sign in result:', result);
+
       if (result?.error) {
+        console.error('Sign in error:', result.error);
         toast.error('Invalid credentials. Please try again.');
       } else {
         toast.success('Successfully signed in!');
         // Check user role and redirect appropriately
         const session = await getSession();
+        console.log('Session after login:', session);
         if (session?.user?.role === 'admin') {
           router.push('/admin');
         } else {

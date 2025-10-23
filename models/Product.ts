@@ -153,6 +153,34 @@ if (USE_MOCK_DB) {
     findById: (id: string) => mockDb.getModel('Product').findById(id),
     create: (data: any) => mockDb.getModel('Product').create(data),
     countDocuments: (query?: any) => mockDb.getModel('Product').countDocuments(query),
+    findByIdAndUpdate: async (id: string, update: any, options: any = {}) => {
+      const model = mockDb.getModel('Product');
+      const existingDoc = await model.findById(id);
+      if (!existingDoc) return null;
+      
+      // Handle $set operator
+      const updateData = update.$set || update;
+      
+      // Create a new object with updated fields
+      const updatedDoc = {
+        ...existingDoc.toObject(),
+        ...updateData,
+        updatedAt: new Date()
+      };
+      
+      // Store the updated document
+      await mockDb.removeDocument('Product', id);
+      const result = await model.create({ ...updatedDoc, _id: id });
+      
+      return options.new !== false ? result : existingDoc;
+    },
+    findByIdAndDelete: async (id: string) => {
+      const model = mockDb.getModel('Product');
+      const doc = await model.findById(id);
+      if (!doc) return null;
+      mockDb.removeDocument('Product', id);
+      return doc;
+    }
   };
 } else {
   // Use MongoDB

@@ -1,3 +1,4 @@
+// AdminDashboard.tsx.new - Temporary file to compare
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,6 +14,7 @@ import {
   Search,
   Filter
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Product {
   _id: string;
@@ -31,6 +33,21 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Handle escape key and click outside
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && (showAddModal || editingProduct)) {
+        setShowAddModal(false);
+        setEditingProduct(null);
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [showAddModal, editingProduct]);
 
   useEffect(() => {
     fetchProducts();
@@ -38,15 +55,72 @@ export function AdminDashboard() {
 
   const fetchProducts = async () => {
     try {
+      setLoading(true);
       const response = await fetch('/api/products');
       const data = await response.json();
       if (data.success) {
         setProducts(data.products);
+      } else {
+        toast.error(data.error || 'Failed to fetch products');
       }
     } catch (error) {
       console.error('Error fetching products:', error);
+      toast.error('Failed to fetch products');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async (productId: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    
+    try {
+      const response = await fetch(`/api/products/admin?id=${productId}`, {
+        method: 'DELETE'
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Product deleted successfully');
+        fetchProducts(); // Refresh the list
+      } else {
+        toast.error(data.error || 'Failed to delete product');
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      toast.error('Failed to delete product');
+    }
+  };
+
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+  };
+
+  const handleUpdate = async (updatedData: Partial<Product>) => {
+    if (!editingProduct?._id) return;
+
+    try {
+      const response = await fetch('/api/products/admin', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingProduct._id,
+          ...updatedData
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Product updated successfully');
+        setEditingProduct(null);
+        fetchProducts(); // Refresh the list
+      } else {
+        toast.error(data.error || 'Failed to update product');
+      }
+    } catch (error) {
+      console.error('Error updating product:', error);
+      toast.error('Failed to update product');
     }
   };
 
@@ -96,6 +170,7 @@ export function AdminDashboard() {
         </div>
         
         <motion.button
+          onClick={() => setShowAddModal(true)}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           className="px-6 py-3 bg-aura-gradient text-white font-semibold rounded-lg
@@ -197,7 +272,7 @@ export function AdminDashboard() {
                   >
                     <td className="py-4 px-4">
                       <div className="flex items-center gap-3">
-                        {product.images[0] ? (
+                        {product.images?.length > 0 ? (
                           <div className="w-12 h-12 bg-gradient-to-br from-brand-darkRed to-brand-crimson rounded-lg flex items-center justify-center">
                             <Package className="w-6 h-6 text-white" />
                           </div>
@@ -243,6 +318,7 @@ export function AdminDashboard() {
                     <td className="py-4 px-4">
                       <div className="flex items-center justify-center gap-2">
                         <motion.button
+                          onClick={() => handleEdit(product)}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           className="p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
@@ -250,6 +326,7 @@ export function AdminDashboard() {
                           <Edit className="w-4 h-4" />
                         </motion.button>
                         <motion.button
+                          onClick={() => handleDelete(product._id)}
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           className="p-2 text-white/70 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
@@ -273,6 +350,200 @@ export function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Add/Edit Product Modal */}
+      {(showAddModal || editingProduct) && (
+        <div 
+          className="fixed inset-0 bg-black/75 flex items-center justify-center"
+          onClick={(e) => {
+            // Only close if clicking the backdrop (not the modal itself)
+            if (e.target === e.currentTarget) {
+              setShowAddModal(false);
+              setEditingProduct(null);
+            }
+          }}
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative glass-card p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto
+                     before:absolute before:inset-0 before:p-[2px] before:rounded-2xl before:bg-gradient-to-r 
+                     before:from-brand-auraRed/80 before:via-brand-crimson/50 before:to-brand-darkRed/80
+                     before:-z-10 after:absolute after:inset-[2px] after:rounded-[14px] 
+                     after:bg-brand-black/95 after:-z-10"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6">
+              {editingProduct ? 'Edit Product' : 'Add New Product'}
+            </h2>
+
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              const title = formData.get('title')?.toString() || '';
+              const description = formData.get('description')?.toString() || '';
+              const price = parseFloat(formData.get('price')?.toString() || '0');
+              const stock = parseInt(formData.get('stock')?.toString() || '0');
+              const tags = formData.get('tags')?.toString().split(',').map(t => t.trim()) || [];
+              const slug = formData.get('slug')?.toString() || '';
+
+              const data = {
+                title,
+                description,
+                price,
+                stock,
+                tags,
+                slug,
+                images: [], // Default empty array for images
+                models: [], // Default empty array for 3D models
+                currency: 'USD', // Default currency
+                status: 'published', // Default status
+                category: tags[0] || 'accessories', // Use first tag as category or default
+                featured: false // Default not featured
+              };
+
+              if (editingProduct) {
+                await handleUpdate(data);
+                setEditingProduct(null);
+              } else {
+                try {
+                  const response = await fetch('/api/products/admin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                  });
+                  
+                  const result = await response.json();
+                  
+                  if (result.success) {
+                    toast.success('Product added successfully');
+                    setShowAddModal(false);
+                    fetchProducts();
+                  } else {
+                    toast.error(result.error || 'Failed to add product');
+                  }
+                } catch (error) {
+                  console.error('Error adding product:', error);
+                  toast.error('Failed to add product');
+                }
+              }
+            }} className="space-y-4">
+              <div>
+                <label className="block text-white/70 text-sm font-medium mb-2">
+                  Title
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  required
+                  defaultValue={editingProduct?.title}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white
+                            placeholder:text-white/30 focus:outline-none focus:border-brand-auraRed/50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/70 text-sm font-medium mb-2">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  required
+                  rows={4}
+                  defaultValue={editingProduct?.description}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white
+                            placeholder:text-white/30 focus:outline-none focus:border-brand-auraRed/50 resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-white/70 text-sm font-medium mb-2">
+                    Price
+                  </label>
+                  <input
+                    type="number"
+                    name="price"
+                    required
+                    min="0"
+                    step="0.01"
+                    defaultValue={editingProduct?.price}
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white
+                              placeholder:text-white/30 focus:outline-none focus:border-brand-auraRed/50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-white/70 text-sm font-medium mb-2">
+                    Stock
+                  </label>
+                  <input
+                    type="number"
+                    name="stock"
+                    required
+                    min="0"
+                    defaultValue={editingProduct?.stock}
+                    className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white
+                              placeholder:text-white/30 focus:outline-none focus:border-brand-auraRed/50"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-white/70 text-sm font-medium mb-2">
+                  Tags (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  name="tags"
+                  required
+                  defaultValue={editingProduct?.tags.join(', ')}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white
+                            placeholder:text-white/30 focus:outline-none focus:border-brand-auraRed/50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/70 text-sm font-medium mb-2">
+                  Slug
+                </label>
+                <input
+                  type="text"
+                  name="slug"
+                  required
+                  defaultValue={editingProduct?.slug}
+                  className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white
+                            placeholder:text-white/30 focus:outline-none focus:border-brand-auraRed/50"
+                />
+              </div>
+
+              <div className="flex justify-end gap-4 mt-6">
+                <motion.button
+                  type="button"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setEditingProduct(null);
+                  }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-6 py-2 border border-white/20 text-white font-medium rounded-lg
+                           hover:bg-white/10 transition-colors"
+                >
+                  Cancel
+                </motion.button>
+                <motion.button
+                  type="submit"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-6 py-2 bg-aura-gradient text-white font-medium rounded-lg
+                           hover:shadow-lg hover:shadow-brand-auraRed/25 transition-all"
+                >
+                  {editingProduct ? 'Update Product' : 'Add Product'}
+                </motion.button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

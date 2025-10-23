@@ -94,8 +94,20 @@ class MockModel {
 
   constructor(private name: string, private schema: any) {}
 
+  private lastId = 0;
   private generateId(): string {
-    return `mock_${this.name}_${this.idCounter++}`;
+    const newId = ++this.lastId;
+    return `mock_${this.name}_${newId}`;
+  }
+  
+  private getIdFromString(id: string): number {
+    const match = id.match(/mock_\w+_(\d+)/);
+    if (match) {
+      const num = parseInt(match[1]);
+      this.lastId = Math.max(this.lastId, num);
+      return num;
+    }
+    return 0;
   }
 
   find(query: any = {}): MockQuery {
@@ -117,12 +129,18 @@ class MockModel {
   }
 
   async create(docData: any): Promise<any> {
-    const id = this.generateId();
     const now = new Date();
+    const id = docData._id || this.generateId();
+    
+    if (docData._id) {
+      // If an ID is provided, update our counter if needed
+      this.getIdFromString(docData._id);
+    }
+
     const doc = {
       ...docData,
       _id: id,
-      createdAt: now,
+      createdAt: docData.createdAt || now,
       updatedAt: now
     };
 
@@ -203,6 +221,10 @@ class MockModel {
       await this.create(item);
     }
   }
+
+  delete(id: string): boolean {
+    return this.data.delete(id);
+  }
 }
 
 // Mock database connection
@@ -235,6 +257,12 @@ export class MockDatabase {
       throw new Error(`Model ${name} not found`);
     }
     return model;
+  }
+
+  removeDocument(modelName: string, id: string): boolean {
+    const model = this.models.get(modelName);
+    if (!model) return false;
+    return model.delete(id);
   }
 
   private async seedSampleData() {
@@ -347,7 +375,7 @@ export class MockDatabase {
       {
         name: "Admin User (Alt)",
         email: "admin@ouswear.com",
-        passwordHash: "$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LesbLOOdOCOKOd.Wm", // admin123
+        passwordHash: "$2a$12$tljE24D.jDBxT4gPnUPn9uqBdvUHf4ZFruCfD.p/BuujRoT4.ymu2", // admin123
         role: "admin",
         isVerified: true,
         addresses: [],

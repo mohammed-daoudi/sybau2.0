@@ -34,7 +34,7 @@ class Logger {
       request: req ? {
         method: req.method,
         url: req.url,
-        headers: Object.fromEntries(req.headers),
+        headers: req.headers ? Object.fromEntries(req.headers) : {},
       } : undefined,
     };
 
@@ -48,8 +48,8 @@ class Logger {
     }
   }
 
-  static info(message: string, req?: NextRequest) {
-    this.log('info', message, undefined, req);
+  static info(message: string, data?: any, req?: NextRequest) {
+    this.log('info', message, data, req);
   }
 
   static warn(message: string, error?: any, req?: NextRequest) {

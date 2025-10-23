@@ -5,38 +5,71 @@ import Logger from '@/lib/logger';
 import { connectDB } from '@/lib/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import type { NextAuthOptions } from 'next-auth';
 
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     CredentialsProvider({
+      id: "credentials",
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
+        console.log('Starting authorization...');
         if (!credentials?.email || !credentials?.password) {
+          console.log('Missing credentials');
           return null;
         }
 
         try {
-          await connectDB();
+          // Using mock database in development
+          if (process.env.NODE_ENV === 'development') {
+            console.log('Using mock database for authentication');
+            
+            // Check for admin credentials
+            if (credentials.email === 'admin@ouswear.com' && credentials.password === 'admin123') {
+              return {
+                id: 'admin-id',
+                email: 'admin@ouswear.com',
+                name: 'Admin User',
+                role: 'admin'
+              };
+            }
+          }
 
+          await connectDB();
+          console.log('Looking for user:', credentials.email);
           const user = await User.findOne({ email: credentials.email });
 
           if (!user) {
+            console.log('User not found:', credentials.email);
             return null;
           }
 
+          console.log('Found user:', user.email, 'role:', user.role);
+          console.log('Stored hash:', user.passwordHash);
+          
           const isPasswordValid = await bcrypt.compare(credentials.password, user.passwordHash);
+          console.log('Password comparison result:', isPasswordValid);
 
           if (!isPasswordValid) {
+            console.log('Invalid password for user:', credentials.email);
             return null;
           }
 
+          console.log('Authentication successful, returning user:', {
+            id: user._id?.toString() || 'mock_id',
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          });
+
           return {
-            id: user._id.toString(),
+            id: user._id?.toString() || 'mock_id',
             email: user.email,
             name: user.name,
             role: user.role,
@@ -71,20 +104,6 @@ const authOptions: NextAuthOptions = {
     strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  cookies: {
-    sessionToken: {
-      name: process.env.NODE_ENV === 'production'
-        ? '__Secure-next-auth.session-token'
-        : 'next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: process.env.NODE_ENV === 'production',
-      },
-    },
-  },
-  secret: process.env.NEXTAUTH_SECRET,
 };
 
 // Remove aggressive rate limiting for auth routes

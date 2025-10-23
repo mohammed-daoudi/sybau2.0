@@ -85,7 +85,6 @@ UserSchema.virtual('fullName').get(function() {
 });
 
 // Indexes for faster queries
-UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 UserSchema.index({ 'wishlist': 1 });
 UserSchema.index({ isVerified: 1 });
@@ -131,13 +130,11 @@ if (USE_MOCK_DB) {
     findById: (id: string) => mockDb.getModel('User').findById(id),
     create: async (data: any) => {
       // Hash password if not already hashed
-      if (data.passwordHash && !data.passwordHash.startsWith('$2a
-
-export default User;
-export type { UserDocument };) && !data.passwordHash.startsWith('$2b
-
-export default User;
-export type { UserDocument };)) {
+      if (
+        data.passwordHash &&
+        !data.passwordHash.startsWith('$2a') &&
+        !data.passwordHash.startsWith('$2b')
+      ) {
         const salt = await bcrypt.genSalt(12);
         data.passwordHash = await bcrypt.hash(data.passwordHash, salt);
       }
